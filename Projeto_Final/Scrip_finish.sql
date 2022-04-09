@@ -3,6 +3,9 @@ CREATE TABLE "categoria" (
   "id_produto" integer not null,
   "nome" varchar(20) not null,
   PRIMARY KEY ("id_categoria")
+  alter table categoria add constraint "FK_categoria.id_produto" 
+    foreign key ("id_produto")
+        references "produto"("id_produto");
 );
 
 CREATE TABLE "cliente" (
@@ -15,7 +18,13 @@ CREATE TABLE "cliente" (
   "data_nasc" date not null,
   "telefone" integer not null,
   "id_endereco" integer not null,
+  alter table cliente alter column login type varchar(20);
+  alter table cliente alter column cpf type varchar(14);
+  alter table cliente alter column telefone type varchar(14);
   PRIMARY KEY ("id_cliente")
+  alter table cliente add constraint "FK_cliente.id_endereco" 
+    foreign key ("id_endereco")
+        references "endereco"("id_endereco");
 );
 
 CREATE TABLE "estoque" (
@@ -30,6 +39,13 @@ CREATE TABLE "pedido" (
   "id_cliente" integer not null,
   "quantidade" integer not null,
   PRIMARY KEY ("id_pedido")
+  alter table pedido add id_produto integer not null;
+
+ALTER TABLE "Trabalho Att".pedido ADD CONSTRAINT "FK_pedido.id_cliente" FOREIGN KEY (id_cliente) REFERENCES "Trabalho Att".cliente(id_cliente) ON DELETE CASCADE;
+ALTER TABLE "Trabalho Att".pedido ADD CONSTRAINT "FK_produto.id_produto" FOREIGN KEY (id_produto) REFERENCES "Trabalho Att".produto(id_produto);
+alter table pedido add constraint "FK_pedido.id_cliente" 
+    foreign key ("id_cliente")
+        references "cliente"("id_cliente");
 );
 
 CREATE TABLE "funcionario" (
@@ -39,6 +55,9 @@ CREATE TABLE "funcionario" (
   "salario" decimal,
   "id_endereco" integer  not null,
   PRIMARY KEY ("id_funcionario")
+  alter table funcionario add constraint "FK_cliente.id_endereco" 
+    foreign key ("id_endereco")
+        references "endereco"("id_endereco");
 );
 
 CREATE TABLE "endereco" (
@@ -49,6 +68,9 @@ CREATE TABLE "endereco" (
   "cidade" varchar(20) ,
   "estado" varchar(20),
   PRIMARY KEY ("id_endereco")
+  alter table estoque add constraint "FK_produto.id_produto"
+    foreign key ("id_produto")
+        references "produto"("id_produto");
 );
 
 CREATE TABLE "produto" (
@@ -73,27 +95,6 @@ CREATE TABLE "produto" (
       REFERENCES "funcionario"("id_funcionario")
 );
 
-alter table categoria add constraint "FK_categoria.id_produto" 
-    foreign key ("id_produto")
-        references "produto"("id_produto");
-       
-alter table pedido add constraint "FK_pedido.id_cliente" 
-    foreign key ("id_cliente")
-        references "cliente"("id_cliente");
-       
-alter table cliente add constraint "FK_cliente.id_endereco" 
-    foreign key ("id_endereco")
-        references "endereco"("id_endereco");
-
-alter table funcionario add constraint "FK_cliente.id_endereco" 
-    foreign key ("id_endereco")
-        references "endereco"("id_endereco");
-
-alter table estoque add constraint "FK_produto.id_produto"
-    foreign key ("id_produto")
-        references "produto"("id_produto");
-
-/*-------------------------------------------*/
 /*endereços*/
                       /*todos varchar*/
 insert into endereco(cep, rua, bairro, cidade, estado) 
@@ -162,14 +163,6 @@ insert into funcionario(nome, cpf, salario,id_endereco)
 values ('Geisa Alves', '670.316.906-33',7000, 6);
 
 select * from funcionario
-
-/*-------------------------------------------*/
-
-alter table cliente alter column login type varchar(20);
-alter table cliente alter column cpf type varchar(14);
-alter table cliente alter column telefone type varchar(14);
-
-/*-------------------------------------------*/
 
 /*clientes*/
 /*       varchar                                                                                  date         integer     */
@@ -286,11 +279,7 @@ select * from estoque
 
 /*pedido*/
 
-alter table pedido add id_produto integer not null;
 
-alter table pedido add constraint "FK_produto.id_produto"
-	foreign key ("id_produto")
-		references "produto" ("id_produto");
 
 
 	/*              date                      integer               */
@@ -379,5 +368,22 @@ select * from cliente;
 /*SQL de exclusão, dos clientes que foram cadastrados contendo o caractere ‘e’ no nome
  * ou que possuem uma senha com menos de 4 caracteres*/
 
-delete from cliente where nome_completo like '%e%' or length (senha) > 4;
-select * from cliente 
+begin transaction;
+delete from cliente
+where 
+cliente.id_cliente
+in(
+select cliente.id_cliente
+from cliente
+full join
+pedido
+on pedido.id_cliente = cliente.id_cliente
+where
+pedido.id_pedido is null
+and
+(cliente.nome_completo like '%e%'
+or
+length(cliente.senha)<4
+));
+rollback;
+commit;

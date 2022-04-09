@@ -379,5 +379,25 @@ select * from cliente;
 /*SQL de exclusão, dos clientes que foram cadastrados contendo o caractere ‘e’ no nome
  * ou que possuem uma senha com menos de 4 caracteres*/
 
-delete from cliente where nome_completo like '%e%' or length (senha) > 4;
-select * from cliente 
+begin transaction;
+delete from cliente
+where 
+cliente.id_cliente 
+where
+
+in(
+select cliente.id_cliente
+from cliente
+full join
+pedido
+on pedido.id_cliente = cliente.id_cliente
+where 
+pedido.id_pedido is null
+and
+cliente.nome_completo like '%e%'
+or
+length(cast(cliente.senha as varchar))<4
+);
+
+commit
+rollback
