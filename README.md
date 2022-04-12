@@ -25,7 +25,7 @@ Luana Pimentel | [Linkedin]()
 
 Luís Felipe Winther | [Linkedin](https://www.linkedin.com/in/luisfilipewintherborges/)
 
-Matheus Araújo | [Linkedin]()
+Matheus Araújo | [Linkedin](https://www.linkedin.com/in/matheus-de-ara%C3%BAjo-sim%C3%B5es-53466a237)
 
 **Tarefas e Projetos**
 
